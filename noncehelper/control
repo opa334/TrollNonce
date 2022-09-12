@@ -1,0 +1,8 @@
+Package: com.opa334.trollnoncehelper
+Name: TrollNonceHelper
+Version: 1.0
+Architecture: iphoneos-arm
+Description: An awesome tool!
+Maintainer: opa334
+Author: opa334
+Section: Utilities
