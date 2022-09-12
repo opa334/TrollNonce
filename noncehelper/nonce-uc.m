@@ -12,7 +12,7 @@ io_connect_t openApNonceService(void)
     CFMutableDictionaryRef nonceServiceDict = IOServiceMatching("AppleMobileApNonce");
     if(nonceServiceDict)
 	{
-		io_connect_t connect;
+		io_connect_t connect = 0;
 		io_service_t nonceService = IOServiceGetMatchingService(kIOMasterPortDefault, nonceServiceDict);
 		NSLog(@"nonceService = %d\n", nonceService);
 		kern_return_t kr = IOServiceOpen(nonceService, mach_task_self(), 0, &connect);
@@ -34,7 +34,7 @@ uint64_t UCGetNonce()
     if(!apNonceConnect) return 0;
 
     size_t output_buffer_size = sizeof(uint64_t);
-	uint64_t output_buffer;
+	uint64_t output_buffer = 0;
 
     __unused kern_return_t kr = IOConnectCallMethod(apNonceConnect, AppleMobileApNonce_RetrieveNonce, NULL, 0, 0, 0, 0, 0, &output_buffer, &output_buffer_size);
     
