@@ -108,6 +108,12 @@ NSString* getHelperPath(void)
 	{
 		UITextField* nonceField = setNonceAlert.textFields[0];
 		NSString* nonceStr = nonceField.text;
+
+		if(!nonceStr || nonceStr.length == 0)
+		{
+			nonceStr = @"0x1111111111111111";
+		}
+
 		if(nonceStr.length > 2 && [nonceStr hasPrefix:@"0x"])
 		{
 			[self startActivity:@"Setting Nonce..."];
