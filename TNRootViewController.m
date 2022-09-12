@@ -126,7 +126,7 @@ NSString* getHelperPath(void)
 
 						if(setRet == 0)
 						{
-							UIAlertController* successAlert = [UIAlertController alertControllerWithTitle:@"Success" message:@"Setting the nonce should have succeeded, the TrollHelper app may display \"Error\" in the nonce field until a reboot, this is a quirk of dimentio and normal. If you want to be sure that setting the nonce has succeeded, reboot your device and check the 'Nonce' field afterwards."  preferredStyle:UIAlertControllerStyleAlert];
+							UIAlertController* successAlert = [UIAlertController alertControllerWithTitle:@"Success" message:@"Setting the nonce should have succeeded, the TrollHelper app may display \"Error\" or an invalid value in the nonce field until a reboot, this is a quirk of dimentio and normal. If you want to be sure that setting the nonce has succeeded, reboot your device and check the 'Nonce' field afterwards."  preferredStyle:UIAlertControllerStyleAlert];
 							UIAlertAction* closeAction = [UIAlertAction actionWithTitle:@"Close" style:UIAlertActionStyleDefault handler:nil];
 							[successAlert addAction:closeAction];
 
