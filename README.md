@@ -1,6 +1,6 @@
 # TrollNonce
 
-Nonce Setter for 15.0 - 15.1.1, A10 - A15, only works when installed through TrollStore 1.0.9.
+Nonce Setter for 15.0 - 15.1.1, A10 - A15, only works when installed through TrollStore 1.0.9 or newer.
 
 # Credits
 
