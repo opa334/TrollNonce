@@ -99,10 +99,8 @@ NSString* getHelperPath(void)
 	UIAlertController* setNonceAlert = [UIAlertController alertControllerWithTitle:@"Set Nonce" message:@"Select a nonce to set, supports 15.0 - 15.1.1, A10 and up.\nNote: Setting a nonce is only possible once per boot." preferredStyle:UIAlertControllerStyleAlert];
 
 	[setNonceAlert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-        textField.placeholder = @"0x1111111111111111";
-        textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-        textField.borderStyle = UITextBorderStyleRoundedRect;
-    }];
+		textField.placeholder = @"0x1111111111111111";
+	}];
 
 	UIAlertAction* setAction = [UIAlertAction actionWithTitle:@"Set" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action)
 	{
