@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <mach/mach_error.h>
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <IOKit/IOKitLib.h>
