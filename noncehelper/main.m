@@ -6,6 +6,7 @@
 #import "exploit/multicast_bytecopy/kernel_rw.h"
 @import CoreML;
 #import <mach-o/loader.h>
+#import "exploit/weightBufs/AppleNeuralEngine/_ANEDeviceInfo.h"
 
 int wb_exploit(uint64_t* kernel_base);
 void wb_cleanup(void);
@@ -97,9 +98,10 @@ int main(int argc, char *argv[], char *envp[]) {
                                             options:0 
                                        errorHandler:nil];
 					NSURL* file;
+					NSString* aneSubType = [_ANEDeviceInfo aneSubType].uppercaseString;
 					while(file = [enumerator nextObject])
 					{
-						if([file.pathExtension isEqualToString:@"hwx"])
+						if([file.pathExtension isEqualToString:@"hwx"] && [file.lastPathComponent containsString:aneSubType])
 						{
 							struct mach_header header;
 							FILE* f = fopen(file.fileSystemRepresentation, "r");
