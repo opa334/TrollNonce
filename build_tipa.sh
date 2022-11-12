@@ -15,6 +15,7 @@ mkdir .theos/Payload
 mv .theos/obj/TrollNonce.app .theos/Payload/TrollNonce.app
 cp .theos/obj/noncehelper .theos/Payload/TrollNonce.app/noncehelper
 
+mkdir -p packages
 cd .theos
 zip -vr ../packages/TrollNonce.tipa Payload
 cd -
