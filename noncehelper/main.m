@@ -2,10 +2,33 @@
 #import "nonce-uc.h"
 
 #import "dimentio/libdimentio.h"
-#import "exploit/exploit.h"
-#import "exploit/kernel_rw.h"
+#import "exploit/multicast_bytecopy/exploit.h"
+#import "exploit/multicast_bytecopy/kernel_rw.h"
+@import CoreML;
+#import <mach-o/loader.h>
+
+int wb_exploit(uint64_t* kernel_base);
+void wb_cleanup(void);
+uint32_t kread32_wb(uint64_t address);
+uint64_t kread64_wb(uint64_t address);
+void kwrite64_wb(uint64_t address,uint64_t value);
+
+CFTypeRef MGCopyAnswer(CFStringRef);
+
+cpu_subtype_t subtypeToUse = 0;
 
 #import "KernelManager.h"
+
+extern char*** _NSGetArgv();
+NSString* safe_getExecutablePath()
+{
+	char* executablePathC = **_NSGetArgv();
+	return [NSString stringWithUTF8String:executablePathC];
+}
+
+#ifndef kCFCoreFoundationVersionNumber_iOS_15_1
+#define kCFCoreFoundationVersionNumber_iOS_15_1 1855.105
+#endif
 
 @import Foundation;
 
@@ -45,21 +68,77 @@ int main(int argc, char *argv[], char *envp[]) {
 			if(nonce)
 			{
 				uint64_t kernel_base = 0;
-				if(exploit_get_krw_and_kernel_base(&kernel_base) != 0)
+				KernelManager* km = [KernelManager sharedInstance];
+
+				CFTypeRef hasAppleNeuralEngine = MGCopyAnswer(CFSTR("HasAppleNeuralEngine"));
+				if(kCFCoreFoundationVersionNumber <= kCFCoreFoundationVersionNumber_iOS_15_1) // supports A10-A15
 				{
-					return 1;
+					NSLog(@"exploiting using multicast_bytecopy");
+					if(mb_exploit_get_krw_and_kernel_base(&kernel_base) != 0)
+					{
+						return 1;
+					}
+					[km loadOffsets];
+					[km loadSlidOffsetsWithKernelBase:kernel_base];
+					km.kread_32_d = kread32_mb;
+					km.kread_64_d = kread64_mb;
+					km.kwrite_32 = kwrite32_mb;
+					km.kwrite_64 = kwrite64_mb;
+					km.kcleanup = exploitation_cleanup;
+				}
+				else if(hasAppleNeuralEngine == kCFBooleanTrue) // supports A12-A14
+				{
+					NSLog(@"exploiting using weightBufs");
+
+					// Find some precompiled model and get the cpusubtype of it because we need it in the exploit
+					// Accessing this path is only possible thanks to several entitlements
+					NSURL* anedCrap = [NSURL fileURLWithPath:@"/var/mobile/Library/Caches/com.apple.aned"];
+					NSDirectoryEnumerator<NSURL*>* enumerator = [[NSFileManager defaultManager] enumeratorAtURL:anedCrap 
+                         includingPropertiesForKeys:nil 
+                                            options:0 
+                                       errorHandler:nil];
+					NSURL* file;
+					while(file = [enumerator nextObject])
+					{
+						if([file.lastPathComponent isEqualToString:@"model.hwx"])
+						{
+							struct mach_header header;
+							FILE* f = fopen(file.fileSystemRepresentation, "r");
+							if(!f) continue;
+							fread(&header, sizeof(struct mach_header), 1, f);
+							fclose(f);
+							subtypeToUse = header.cpusubtype;
+							break;
+						}
+					}
+
+					while(1)
+					{
+						wb_exploit(&kernel_base);
+						if(kernel_base)
+						{
+							if(kread64_wb(kernel_base) == 0x100000CFEEDFACF)
+							{
+								// exploit worked, continue
+								break;
+							}
+						}
+						// otherwise, try again
+					}
+					[km loadOffsets];
+					[km loadSlidOffsetsWithKernelBase:kernel_base];
+					km.kread_32_d = kread32_wb;
+					km.kread_64_d = kread64_wb;
+					km.kwrite_64 = kwrite64_wb;
+					km.kcleanup = wb_cleanup;
+				}
+				else
+				{
+					return 5;
 				}
 
-				KernelManager* km = [KernelManager sharedInstance];
-				[km loadOffsets];
-				[km loadSlidOffsetsWithKernelBase:kernel_base];
-				
-				km.kread_32_d = kread32;
-				km.kread_64_d = kread64;
-				km.kwrite_32 = kwrite32;
-				km.kwrite_64 = kwrite64;
-				
-				km.kcleanup = exploitation_cleanup;
+				NSLog(@"krw active now!");
+				NSLog(@"about to set nonce 0x%llX", nonce);
 
 				size_t nonce_d_sz;
 				uint8_t nonce_d[CC_SHA384_DIGEST_LENGTH];
@@ -77,7 +156,6 @@ int main(int argc, char *argv[], char *envp[]) {
 				[km finishAndCleanupIfNeeded];
 
 				if(suc == YES) return 0;
-				return 1;
 			}
 		}
 		else if([selector isEqualToString:@"get-nonce"])

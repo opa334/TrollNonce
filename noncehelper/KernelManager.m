@@ -375,6 +375,14 @@ void DumpHex(const void* data, size_t size) {
     {
         return _kwrite32_block(addr, value);
     }
+    else
+    {
+        uint64_t existing64 = [self read64BitValueAtAddress:addr];
+        if(existing64 == 0) return 1;
+        uint64_t upper32 = existing64 & 0xFFFFFFFF00000000;
+        uint64_t value64 = upper32 | value;
+        return [self write64BitValue:value64 toAddress:addr];
+    }
     return 0;
 }
 

@@ -11,10 +11,13 @@ Files: noncehelper/dimentio
 Copyright: Copyright (c) 2019 0x7ff,
 License: Apache
 
-Files: noncehelper/exploit
+Files: noncehelper/exploit/multicast_bytecopy
 Copyright: Copyright (c) 2022 John Åkerblom,
 License: All rights reserved
 
+Files: noncehelper/exploit/weightBufs
+Copyright: Copyright (c) 2022 Mohamed Ghannam,
+License: MIT
 
 License: Apache
                                 Apache License

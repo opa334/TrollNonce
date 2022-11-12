@@ -48,7 +48,7 @@ NSString* getHelperPath(void)
 		_specifiers = [NSMutableArray new];
 
 		PSSpecifier* groupSpecifier = [PSSpecifier emptyGroupSpecifier];
-		[groupSpecifier setProperty:[NSString stringWithFormat:@"TrollNonce %@\n\n© 2022 Lars Fröder (opa334)\n\nCredits:\n@jaakerblom: multicast_bytecopy exploit\n@0x7ff: dimentio", [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"]] forKey:@"footerText"];
+		[groupSpecifier setProperty:[NSString stringWithFormat:@"TrollNonce %@\n\n© 2022 Lars Fröder (opa334)\n\nCredits:\n@jaakerblom: multicast_bytecopy exploit\n@_simo36: weightBufs exploit\n@0x7ff: dimentio", [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"]] forKey:@"footerText"];
 
 		[_specifiers addObject:groupSpecifier];
 
@@ -96,7 +96,7 @@ NSString* getHelperPath(void)
 
 - (void)setNoncePressed
 {
-	UIAlertController* setNonceAlert = [UIAlertController alertControllerWithTitle:@"Set Nonce" message:@"Select a nonce to set, supports 15.0 - 15.1.1, A10 and up.\nNote: Setting a nonce is only possible once per boot." preferredStyle:UIAlertControllerStyleAlert];
+	UIAlertController* setNonceAlert = [UIAlertController alertControllerWithTitle:@"Set Nonce" message:@"Select a nonce to set, supports 15.0 - 15.1.1 on A10-A15 (multicast_bytecopy) and 15.0 - 15.5b4 on A12+ (weightBufs, NOTE: limited compatibility, some device / version combinations aren't working currently).\nNote: Setting a nonce using multicast_bytecopy is only possible once per boot." preferredStyle:UIAlertControllerStyleAlert];
 
 	[setNonceAlert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
 		textField.placeholder = @"0x1111111111111111";
@@ -115,7 +115,7 @@ NSString* getHelperPath(void)
 		if(nonceStr.length > 2 && [nonceStr hasPrefix:@"0x"])
 		{
 			[self startActivity:@"Setting Nonce..."];
-			dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
+			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
 				int setRet = spawnRoot(getHelperPath(), @[@"set-nonce", nonceStr], nil, nil);
 				dispatch_async(dispatch_get_main_queue(), ^(void){
 					[self stopActivityWithCompletion:^
@@ -129,6 +129,22 @@ NSString* getHelperPath(void)
 							[successAlert addAction:closeAction];
 
 							[self presentViewController:successAlert animated:YES completion:nil];
+						}
+						else if(setRet == 5)
+						{
+							UIAlertController* errorAlert = [UIAlertController alertControllerWithTitle:@"Error" message:@"TrollNonce does not support this device / version combination" preferredStyle:UIAlertControllerStyleAlert];
+							UIAlertAction* closeAction = [UIAlertAction actionWithTitle:@"Close" style:UIAlertActionStyleDefault handler:nil];
+							[errorAlert addAction:closeAction];
+
+							[self presentViewController:errorAlert animated:YES completion:nil];
+						}
+						else
+						{
+							UIAlertController* errorAlert = [UIAlertController alertControllerWithTitle:@"Error" message:[NSString stringWithFormat:@"Error %d occured while setting nonce, kernel exploit probably failed, maybe (reboot and) try again? Check syslog for more info", setRet] preferredStyle:UIAlertControllerStyleAlert];
+							UIAlertAction* closeAction = [UIAlertAction actionWithTitle:@"Close" style:UIAlertActionStyleDefault handler:nil];
+							[errorAlert addAction:closeAction];
+
+							[self presentViewController:errorAlert animated:YES completion:nil];
 						}
 					}];
 				});

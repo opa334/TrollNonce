@@ -34,7 +34,7 @@ void printMultilineNSString(NSString* stringToPrint)
 int spawnRoot(NSString* path, NSArray* args, NSString** stdOut, NSString** stdErr)
 {
 	NSMutableArray* argsM = args.mutableCopy ?: [NSMutableArray new];
-	[argsM insertObject:path.lastPathComponent atIndex:0];
+	[argsM insertObject:path atIndex:0];
 	
 	NSUInteger argCount = [argsM count];
 	char **argsC = (char **)malloc((argCount + 1) * sizeof(char*));
